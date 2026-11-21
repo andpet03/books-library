@@ -1,0 +1,57 @@
+name: Publish FOLIO website
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "web/**"
+      - "web-tests/**"
+      - ".github/workflows/deploy-website.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: folio-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Download project files
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Test the interface
+        run: node --test web-tests/*.test.cjs
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload website files
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: web
+
+      - name: Publish website
+        id: deployment
+        uses: actions/deploy-pages@v4
