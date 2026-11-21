@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Find your next read. Explore books, build a personal shelf, compare titles and follow recorded prices with FOLIO.">
+  <meta name="theme-color" content="#203c3b">
+  <title>FOLIO — A little room for great books</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="config.js" defer></script>
+  <script src="js/core.js" defer></script>
+  <script src="js/api.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="header">
+  <a class="brand" href="#browse" aria-label="FOLIO home"><img src="assets/favicon.svg" alt="" width="32" height="32">FOLIO<span class="brand-dot">.</span></a>
+  <nav aria-label="Main navigation">
+    <button data-view="browse" aria-current="page">Discover</button>
+    <button data-view="shelf">My shelf <span id="shelf-count" class="nav-count">0</span></button>
+    <button data-view="picker">Book match</button>
+    <button data-view="compare">Compare <span id="compare-count" class="nav-count">0</span></button>
+  </nav>
+  <button id="refresh" class="quiet" title="Read the latest completed collection">↻ <span>Refresh</span></button>
+</header>
+<main id="main" tabindex="-1">
+  <div id="notice" class="notice" role="status" hidden></div>
+  <div id="load-error" class="error-panel" role="alert" hidden><strong>We couldn’t open the catalogue.</strong><p id="error-text"></p><button id="retry" class="primary">Try again</button></div>
+  <section id="hero" class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy"><span class="eyebrow light">A LITTLE ROOM FOR GREAT BOOKS</span><h1 id="hero-title">A new chapter.<br><em>Your next favourite.</em></h1><p>Wander through the shelves. Follow your curiosity.<br>Make a little space for something unexpected.</p><div class="hero-actions"><a href="#catalogue" class="button cream">Explore the collection <span>↗</span></a><button data-view="picker" class="hero-link">Find my book match →</button></div><div class="hero-foot"><span id="hero-count">The collection is opening</span><span>Curiosity welcome.</span></div></div>
+    <div class="hero-art" aria-hidden="true"><div class="halo"></div><div class="book-stack" id="hero-books"><div class="art-book book-one">THE ART<br>OF<br>DISCOVERY</div><div class="art-book book-two">One more<br><em>chapter.</em></div><div class="art-book book-three">STORIES<br>TO STAY<br>WITH YOU</div></div><span class="art-note">Good stories find their people.</span></div>
+  </section>
+  <div class="collection-status"><span class="status-dot"></span><span id="freshness" role="status">Loading the latest completed collection…</span><span class="status-aside">Prices in GBP · Sample catalogue</span></div>
+
+  <section id="browse-view" class="view" aria-labelledby="browse-heading">
+    <div class="section-heading" id="catalogue"><div><span class="eyebrow">THE OPEN SHELVES</span><h2 id="browse-heading">Follow a little curiosity.</h2></div><p>Something familiar. Something entirely new.</p></div>
+    <div id="genre-chips" class="chips" aria-label="Explore categories"></div>
+    <form id="filters" class="filters" role="search">
+      <label class="search-label"><span>Search the collection</span><input id="search" type="search" placeholder="A title, an idea, a few words…" autocomplete="off"></label>
+      <label>Category<select id="category"><option value="">Every category</option></select></label>
+      <label>Maximum price (£)<input id="max-price" type="number" min="0" step="0.01" placeholder="Any price"></label>
+      <label>Minimum rating<select id="rating"><option value="0">Any rating</option><option value="5">5 stars</option><option value="4">4+ stars</option><option value="3">3+ stars</option><option value="2">2+ stars</option></select></label>
+      <div class="filter-bottom"><label class="checkbox"><input type="checkbox" id="stock">Available copies only</label><button type="button" id="reset" class="text-button">Clear filters</button><label class="sort-label">Sort by<select id="sort"><option value="title">Title A–Z</option><option value="rating">Highest rated</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="stock">Most copies available</option></select></label></div>
+    </form>
+    <div class="results-line"><p id="result-count" role="status">Loading books…</p><span>Save a title. Start a story.</span></div>
+    <div id="book-grid" class="book-grid" aria-busy="true"></div>
+    <div id="browse-empty" class="empty" hidden><span class="empty-symbol">✧</span><h3>No books on this shelf.</h3><p>Try a different title, category or price range.</p><button id="empty-reset" class="primary">Clear filters</button></div>
+    <nav id="pagination" class="pagination" aria-label="Catalogue pages" hidden><button id="previous">← Previous</button><span id="page-label"></span><button id="next">Next →</button></nav>
+  </section>
+
+  <section id="shelf-view" class="view" hidden aria-labelledby="shelf-heading">
+    <div class="section-heading"><div><span class="eyebrow">YOUR OWN LITTLE COLLECTION</span><h2 id="shelf-heading">The books you make room for.</h2></div><button id="export-shelf" class="outline">Back up my shelf ↓</button></div>
+    <p class="muted">Your saved books, reading status and notes stay in this browser. Download a backup to move them to another device.</p>
+    <div class="shelf-tools"><label>Show<select id="shelf-filter"><option value="all">All saved books</option><option value="want">Want to read</option><option value="reading">Currently reading</option><option value="read">Finished</option></select></label><label class="button outline file-label">Restore a backup ↑<input id="import-shelf" type="file" accept="application/json,.json"></label></div>
+    <div id="shelf-grid" class="book-grid"></div><div id="shelf-empty" class="empty"><span class="empty-symbol">♡</span><h3>A shelf waiting for your stories.</h3><p>Tap the heart on a book to make it yours.</p><button data-view="browse" class="primary">Find your first book →</button></div>
+    <div id="missing-shelf" class="muted"></div>
+  </section>
+
+  <section id="picker-view" class="view" hidden aria-labelledby="picker-heading">
+    <div class="section-heading"><div><span class="eyebrow">A HAPPY LITTLE DISCOVERY</span><h2 id="picker-heading">Let a book find you.</h2></div></div>
+    <div class="picker-layout"><div class="picker-story"><span class="picker-ornament">✳</span><h3>A little budget.<br>A world of possibility.</h3><p>Choose your mood and a spending limit. We’ll put together a surprise selection from the books available in the catalogue.</p><span class="eyebrow">LESS SCROLLING. MORE READING.</span></div>
+    <form id="picker-form" class="picker-form"><label>Total budget (£)<input id="budget" type="number" min="0.01" step="0.01" value="50" required></label><label>What are you in the mood for?<select id="picker-category"><option value="">Surprise me — any category</option></select></label><label>Maximum number of books<select id="bundle-size"><option value="1">One great discovery</option><option value="2">Up to 2 books</option><option value="3">Up to 3 books</option><option value="5">Up to 5 books</option></select></label><label class="checkbox"><input type="checkbox" id="exclude-read" checked>Skip books I’ve marked as finished</label><button class="primary" type="submit" id="pick-button">Find my next chapter ✧</button><p class="small muted">A random selection within your total budget. Catalogue prices only; delivery costs are not included.</p></form></div>
+    <div id="picker-result" aria-live="polite"></div>
+  </section>
+
+  <section id="compare-view" class="view" hidden aria-labelledby="compare-heading">
+    <div class="section-heading"><div><span class="eyebrow">SIDE BY SIDE</span><h2 id="compare-heading">Make room for the right one.</h2></div><button id="clear-compare" class="text-button">Clear comparison</button></div><p class="muted">Compare up to three books by recorded price, category, rating and available copies.</p><div id="compare-content"></div>
+  </section>
+</main>
+<aside id="compare-tray" class="compare-tray" aria-label="Selected books for comparison" hidden><span id="tray-text"></span><button data-view="compare">Compare books →</button></aside>
+<footer><a class="brand" href="#browse">FOLIO.</a><p>A little room for great books.</p><p class="footer-disclaimer">An educational library using <a href="https://books.toscrape.com/" target="_blank" rel="noopener noreferrer">Books to Scrape</a>.<br>Prices, ratings and stock are demonstration data, not real offers.</p><span>Made for curious minds.</span></footer>
+<dialog id="book-dialog" aria-labelledby="detail-title"><button id="close-detail" class="close-dialog" aria-label="Close book details">×</button><div id="book-detail"></div></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<noscript><p class="error-panel">Please enable JavaScript to browse the library.</p></noscript>
+</body>
+</html>
