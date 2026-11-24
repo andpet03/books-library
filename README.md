@@ -127,7 +127,7 @@ There is no login or cross-device account sync. Shelf data is not sent to Supaba
 
 The website uses a **publishable key** in `web/config.js`. The scraper uses a separate secret key from environment variables or a root `.env` file. The secret key must never be placed in browser code or committed to Git.
 
-Row Level Security is configured on the four tables. Anonymous visitors are intended to have read access to categories/books and completed runs/observations only, with no write access. The interface itself issues read requests. A separate permissions audit is still required; a working website alone does not prove that every database permission is correct.
+The owner-supplied metadata export of 24 November 2026 confirms Row Level Security is enabled on the four tables, with direct `anon` grants limited to SELECT. Policies allow category/book reads and restrict run/observation reads to completed collections. The server-side `service_role` has broader privileges, including DELETE and TRUNCATE, and must remain secret. The interface itself issues read requests. The export is not a complete permissions audit: inherited permissions, other exposed objects and live denied-write behaviour still require separate checks.
 
 ## 4. Setup and execution
 
@@ -151,7 +151,7 @@ The website is plain HTML, CSS and JavaScript, with system fonts and no frontend
 
 ### Run the scraper with your authorised database
 
-The database must contain the four tables described above, with the expected columns, keys, constraints and permissions. The SQL used to create the original project was executed through Supabase's SQL editor. A standalone database migration is not included in this README package; recreating the database from an empty project requires that schema setup first.
+For a **new Supabase project**, run [database/001_initial_schema.sql](database/001_initial_schema.sql) once in its SQL Editor as the database administrator. It creates the four empty tables, constraints, indexes and public-read policies. Follow [Database setup](docs/DATABASE_SETUP.md) for credentials, data loading and website configuration. **Do not run this initial setup against the existing FOLIO tables.** It intentionally fails on existing table names and does not modify the old `books` or `book_prices` tables.
 
 Create `.env` in the project root with your own values:
 
@@ -216,6 +216,8 @@ The project was built incrementally, checking each stage before adding the next:
 9. **Build FOLIO around the data.** The final interface added discovery, shelf management, history, comparison and budget-based matching. Public catalogue access uses a publishable key, while the scraper's secret remains server-side.
 10. **Test the real user flows and publish.** Screenshots documented search, combined filters, details, three historical observations, comparison and a budget-compliant match. A browser reload confirmed that a saved shelf book remained. The Pages deployment then completed successfully in 21 seconds, and the owner confirmed the live site.
 
+11. **Recover reproducible database setup.** The original SQL queries were no longer listed in the editor. A read-only metadata export supplied the current schema, constraints and access policies, allowing an initial setup script to be reconstructed without changing the live data.
+
 The main learning was the distinction between **collecting data, storing data and displaying data**. Reloading the interface reads stored results; it does not collect new source data. Similarly, a book's identity and description are different from a measurement taken during a particular run, and a temporary comparison differs from a persistent personal shelf.
 
 Other practical lessons included using a virtual environment, following pagination, validating relationships, recovering from upload failures, separating public configuration from secrets, and using screenshots as evidence of specific behaviours rather than proof that every feature has been tested.
@@ -267,7 +269,7 @@ This README documents development and usage. It is **not the final publication a
 - The availability chart can show identical rounded axis labels for a constant series; the summary and value table provide the exact count.
 - Book match is random and respects a total catalogue-price budget; it does not optimise preferences, ratings or bundle size, and excludes delivery charges.
 - Shelf data belongs to the browser and site address. Clearing storage can remove it unless a backup exists. Comparison selections intentionally reset on reload.
-- A fresh database cannot be reproduced from this README alone without the original schema SQL. Including a reviewed schema migration is a remaining reproducibility improvement.
+- An initial database setup script is included and statically checked against the owner's exported metadata. Execution against a fresh Supabase instance remains to be verified; it is not an upgrade script for existing databases.
 
 **Data and images:** Book metadata, descriptions and cover URLs come from Books to Scrape. Covers and descriptions remain attributable to their respective rights holders. The screenshots included here were captured by the project owner and show the interface using that source material; they do not imply ownership of book artwork.
 
