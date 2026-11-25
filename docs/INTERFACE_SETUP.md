@@ -3,11 +3,12 @@
 FOLIO is the public reading interface for the books-library scraper project.
 The website uses HTML, CSS and plain JavaScript. No build step is needed.
 
-## Install this update
+## Get the project
 
-Extract Books_Library_FOLIO_Interface.zip. Copy its `web`, `web-tests` and `docs`
-folders into your existing `books-library` folder. Merge existing folders if
-asked. The update does not replace the scraper, its local history or credentials.
+Download and extract the repository, or clone it. Keep its folder structure.
+See the [root README](../README.md) for Python environment setup and collection
+commands. The workflow uses Python 3.13 and Node.js 22; Node is needed only for
+interface development tests, not to browse FOLIO.
 
 The structure should include:
 
@@ -38,7 +39,7 @@ Open PowerShell in the main `books-library` folder. Run:
 .\.venv\Scripts\python.exe -m http.server 8000 --bind 127.0.0.1 --directory web
 ```
 
-Keep that window open. Visit http://localhost:8000 in your browser.
+Keep that window open. Visit http://127.0.0.1:8000 in your browser.
 Ctrl+C in PowerShell stops the local website server. This command serves only
 `web`, so the parent directory's `.env` and local history are not exposed by it.
 Internet access is needed for Supabase and book cover images.
@@ -61,10 +62,14 @@ The four existing library_ tables must have RLS enabled. The website expects:
 | library_scrape_runs | status = 'completed' |
 | library_book_observations | Related run has status = 'completed' |
 
-The owner was given the SQL for these policies and reported successful execution.
+The owner executed the access-policy SQL. A metadata export dated 24 November
+2026 confirms RLS enabled and direct anonymous SELECT grants on these four tables.
 The public `anon` role needs SELECT privileges only; it must not receive INSERT,
 UPDATE, DELETE or TRUNCATE privileges. The existing scraper uses its separate
-secret key. A full permission audit remains part of the final project audit.
+secret key. Effective live permissions were not fully tested; see
+[the publication audit](../AUDIT.md) for verification limits. For a fresh
+database, follow [Database setup](DATABASE_SETUP.md). Do not rerun the initial
+schema script on the existing project.
 
 ## Use the interface
 
@@ -93,7 +98,7 @@ secret key. A full permission audit remains part of the final project audit.
 ## Data and privacy
 
 FOLIO has no login system. Shelf entries and notes are stored with localStorage
-in the current browser and origin. Changing from localhost to GitHub Pages,
+in the current browser and origin. Changing from 127.0.0.1 to GitHub Pages,
 using another browser or clearing browser data changes that storage. Use backups
 to transfer it. Selected comparison books are kept only for the current visit.
 
@@ -107,11 +112,23 @@ is invented. The source UPC is displayed explicitly as the book ID.
 
 ## Publication
 
-Upload the `web`, `web-tests` and `docs` folders to the existing repository,
-retaining their structure. Do not upload the ZIP itself, .env, .venv, local data,
-output exports or personal shelf backups. These instructions do not enable
-GitHub Pages automatically. A Pages deployment that publishes the `web` folder
-will be configured after the local interface has been checked.
+The published website is https://andpet03.github.io/books-library/.
+The owner supplied a successful deployment screenshot and confirmed the live site.
+
+GitHub Pages uses GitHub Actions as its source. The repository's
+`.github/workflows/deploy-website.yml` runs interface tests and publishes only
+`web`. It is triggered by relevant changes on `main` or by manual dispatch.
+The separate `daily-update.yml` workflow collects data and updates Supabase.
+Database updates do not require redeploying the website.
+
+Keep `.env`, virtual environments, generated data/exports and personal shelf
+backups out of uploads. `.gitignore` helps with local Git operations but does
+not remove already tracked files or replace careful browser-upload selection.
+
+Always use http://127.0.0.1:8000 for the documented local setup. `localhost`,
+`127.0.0.1` and the published site have distinct browser-storage origins.
+To move a shelf, download its backup from the original address and restore it
+at the destination. This transfer still needs a separately recorded acceptance test.
 
 ## Offline logic tests (optional for local use)
 
