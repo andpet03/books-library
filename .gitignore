@@ -221,3 +221,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# FOLIO local configuration and generated files
+.env.*
+!.env.example
+/data/
+/output/
+folio-shelf*.json
